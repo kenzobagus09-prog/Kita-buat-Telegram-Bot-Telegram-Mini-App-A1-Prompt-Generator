@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#172033">
+  <title>A1 Universal Prompt Generator</title>
+
+  <!-- Telegram Mini App bridge -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    :root{
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --text:#172033;
+      --muted:#687386;
+      --line:#e1e6ef;
+      --primary:#172033;
+      --soft:#eef3ff;
+      --active:#dfe8ff;
+      --success:#e9f8ef;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Arial,system-ui,sans-serif;
+    }
+
+    button,textarea{font:inherit}
+    button{cursor:pointer}
+
+    .app{
+      width:min(720px,100%);
+      margin:auto;
+      padding:14px;
+      padding-bottom:32px;
+    }
+
+    .header{
+      background:linear-gradient(135deg,#172033,#294b87);
+      color:white;
+      border-radius:24px;
+      padding:24px 20px;
+      margin-bottom:14px;
+      box-shadow:0 10px 28px rgba(23,32,51,.18);
+    }
+
+    .header h1{margin:0 0 6px;font-size:27px}
+    .header p{margin:0;opacity:.85}
+
+    .status{
+      margin-top:14px;
+      padding:10px 12px;
+      border-radius:12px;
+      background:rgba(255,255,255,.12);
+      font-size:13px;
+    }
+
+    .card{
+      background:var(--card);
+      border-radius:22px;
+      padding:18px;
+      margin-bottom:14px;
+      box-shadow:0 5px 18px rgba(40,55,80,.08);
+    }
+
+    .card h2{
+      margin:0 0 14px;
+      font-size:19px;
+    }
+
+    .menu{
+      display:flex;
+      flex-direction:column;
+      gap:9px;
+    }
+
+    .menu button,
+    .ai-grid button,
+    .tool-actions button{
+      border:1px solid var(--line);
+      border-radius:15px;
+      padding:14px 15px;
+      background:#fff;
+      color:var(--text);
+      text-align:left;
+      transition:.15s ease;
+    }
+
+    .menu button:hover,
+    .ai-grid button:hover,
+    .tool-actions button:hover{
+      background:var(--soft);
+    }
+
+    .menu button.active,
+    .ai-grid button.active{
+      background:var(--active);
+      border-color:#aabde8;
+      font-weight:700;
+    }
+
+    .ai-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:9px;
+    }
+
+    .ai-grid button{text-align:center}
+
+    .field{margin-bottom:13px}
+    .field label{
+      display:block;
+      font-size:14px;
+      font-weight:700;
+      margin-bottom:7px;
+    }
+
+    textarea{
+      width:100%;
+      min-height:130px;
+      resize:vertical;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:13px;
+      color:var(--text);
+      background:#fff;
+      outline:none;
+    }
+
+    textarea:focus{border-color:#8ca9e8}
+
+    .generate{
+      width:100%;
+      border:0;
+      border-radius:15px;
+      padding:15px;
+      background:var(--primary);
+      color:white;
+      font-weight:700;
+      margin-top:3px;
+    }
+
+    .tool-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:9px;
+      margin-top:10px;
+    }
+
+    .result{
+      margin-top:14px;
+      background:#f7f9fc;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+      white-space:pre-wrap;
+      line-height:1.55;
+      min-height:80px;
+    }
+
+    .hidden{display:none!important}
+
+    .info{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .pill{
+      display:inline-block;
+      padding:5px 9px;
+      border-radius:999px;
+      background:var(--soft);
+      font-size:12px;
+      margin-right:5px;
+      margin-bottom:5px;
+    }
+
+
+    input[type="file"]{width:100%;padding:12px;border:1px dashed #aab4c5;border-radius:14px;background:#f8fafc}
+    #previewWrap{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+    #previewWrap img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
+    @media(max-width:430px){
+      .app{padding:10px}
+      .header h1{font-size:23px}
+      .ai-grid{grid-template-columns:1fr}
+      .tool-actions{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+
+<body>
+<div class="app">
+
+  <header class="header">
+    <h1>✨ A1 Universal Prompt Generator</h1>
+    <p>Universal Prompt Engine — ChatGPT • Gemini • Veo 3 • Google Flow</p>
+    <div class="status" id="telegramStatus">Mode: Web / Telegram Mini App siap</div>
+  </header>
+
+  <section class="card">
+    <h2>🛠️ MENU TOOL</h2>
+    <div class="menu" id="toolMenu">
+      <button data-tool="prompt_foto">🖼️ Prompt Foto</button>
+      <button data-tool="edit_foto">✏️ Edit Foto</button>
+      <button data-tool="foto_video">🎬 Foto → Video</button>
+      <button data-tool="text_video">🎥 Text → Video</button>
+      <button data-tool="ugc">🛍️ Affiliate / UGC</button>
+      <button data-tool="hard_sell">🔥 Hard Sell</button>
+      <button data-tool="luxury">💎 Luxury Commercial</button>
+      <button data-tool="cinematic">🎞️ Cinematic</button>
+      <button data-tool="storyboard">📋 Storyboard</button>
+      <button data-tool="character">👤 Character Consistency</button>
+      <button data-tool="product">📦 Product Consistency</button>
+      <button data-tool="promotion">🏭 Promosi Pabrik / Wisata / Produk</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>🤖 TARGET AI</h2>
+    <div class="ai-grid" id="aiMenu">
+      <button data-ai="ChatGPT">🧠 ChatGPT</button>
+      <button data-ai="Gemini">✨ Gemini</button>
+      <button data-ai="Veo 3">🎬 Veo 3</button>
+      <button data-ai="Google Flow">🎥 Google Flow</button>
+      <button data-ai="ALL">🔄 Generate Semua</button>
+    </div>
+    <p class="info" id="aiStatus">Target: ChatGPT</p>
+  </section>
+
+  <section class="card" id="generatorPanel">
+    <h2 id="panelTitle">🖼️ PROMPT FOTO</h2>
+
+    <div class="field">
+      <label for="promptInput">Deskripsi / kebutuhan</label>
+      <textarea id="promptInput"
+        placeholder="Contoh: wanita 25 tahun memakai kacamata di dalam mobil, gaya UGC TikTok..."></textarea>
+    </div>
+
+    <div class="field">
+      <label for="extraInput">Detail tambahan (opsional)</label>
+      <textarea id="extraInput"
+        placeholder="Produk, karakter, lokasi, dialog, durasi, rasio, lighting, CTA, dll."></textarea>
+    </div>
+
+    <div class="field">
+      <label for="referenceInput">📷 Upload Foto Referensi</label>
+      <input id="referenceInput" type="file" accept="image/*" multiple>
+      <p class="info" id="uploadInfo">Edit Foto: upload 1 foto. Foto → Video / Affiliate: sampai 2 foto.</p>
+      <div id="previewWrap" class="hidden"></div>
+    </div>
+
+    <div>
+      <span class="pill" id="toolPill">Prompt Foto</span>
+      <span class="pill" id="aiPill">ChatGPT</span>
+    </div>
+
+    <button class="generate" id="generateBtn">⚡ GENERATE PROMPT</button>
+
+    <div class="result hidden" id="result"></div>
+
+    <div class="tool-actions">
+      <button id="copyBtn">📋 Copy Prompt</button>
+      <button id="clearBtn">🗑️ Bersihkan</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>📌 STATUS A1</h2>
+    <p class="info">
+      Tahap 1: audit + perapihan fondasi selesai.
+      Generator saat ini dibuat modular agar menu, target AI, dan
+      Universal Prompt Engine dapat dikembangkan tanpa merusak fitur lama.
+    </p>
+  </section>
+
+</div>
+
+<script>
+  // ============================================================
+  // A1 — UNIVERSAL PROMPT GENERATOR
+  // Stage 1: clean foundation / audit-safe architecture
+  // ============================================================
+
+  const state = {
+    selectedTool: "prompt_foto",
+    selectedAI: "ChatGPT",
+    result: "",
+    referenceFiles: []
+  };
+
+  const TOOL_CONFIG = {
+    prompt_foto:  { title:"🖼️ PROMPT FOTO", label:"Prompt Foto" },
+    edit_foto:    { title:"✏️ EDIT FOTO", label:"Edit Foto" },
+    foto_video:   { title:"🎬 FOTO → VIDEO", label:"Foto → Video" },
+    text_video:   { title:"🎥 TEXT → VIDEO", label:"Text → Video" },
+    ugc:          { title:"🛍️ AFFILIATE / UGC", label:"Affiliate / UGC" },
+    hard_sell:    { title:"🔥 HARD SELL", label:"Hard Sell" },
+    luxury:       { title:"💎 LUXURY COMMERCIAL", label:"Luxury Commercial" },
+    cinematic:    { title:"🎞️ CINEMATIC", label:"Cinematic" },
+    storyboard:   { title:"📋 STORYBOARD", label:"Storyboard" },
+    character:    { title:"👤 CHARACTER CONSISTENCY", label:"Character Consistency" },
+    product:      { title:"📦 PRODUCT CONSISTENCY", label:"Product Consistency" },
+    promotion:    { title:"🏭 PROMOSI PABRIK / WISATA / PRODUK", label:"Promosi" }
+  };
+
+  const $ = id => document.getElementById(id);
+
+  function initTelegram() {
+    if (!window.Telegram || !window.Telegram.WebApp) return;
+
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    $("telegramStatus").textContent =
+      "Mode: Telegram Mini App • siap";
+
+    // Mengikuti tema Telegram tanpa mengubah struktur aplikasi.
+    document.documentElement.style.setProperty(
+      "--bg",
+      tg.themeParams.bg_color || "#f4f7fb"
+    );
+    document.documentElement.style.setProperty(
+      "--text",
+      tg.themeParams.text_color || "#172033"
+    );
+  }
+
+  function selectTool(tool) {
+    state.selectedTool = tool;
+
+    document.querySelectorAll("#toolMenu button").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.tool === tool);
+    });
+
+    const cfg = TOOL_CONFIG[tool];
+    $("panelTitle").textContent = cfg.title;
+    $("toolPill").textContent = cfg.label;
+
+    if (tool === "edit_foto") {
+      $("promptInput").placeholder = "Contoh: ganti background menjadi mobil mewah, pertahankan wajah dan produk.";
+      $("extraInput").placeholder = "Detail edit: background, pakaian, pose, lighting, rasio, dll.";
+      $("uploadInfo").textContent = "✏️ Edit Foto: upload 1 foto referensi.";
+    } else if (tool === "foto_video" || tool === "ugc") {
+      $("uploadInfo").textContent = "📷 Anda dapat upload sampai 2 foto referensi.";
+    } else {
+      $("uploadInfo").textContent = "Foto referensi opsional.";
+    }
+    $("result").classList.add("hidden");
+
+    window.scrollTo({
+      top: $("generatorPanel").offsetTop - 10,
+      behavior: "smooth"
+    });
+  }
+
+  function selectAI(ai) {
+    state.selectedAI = ai;
+
+    document.querySelectorAll("#aiMenu button").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.ai === ai);
+    });
+
+    $("aiStatus").textContent =
+      ai === "ALL"
+        ? "Target: semua AI"
+        : "Target: " + ai;
+
+    $("aiPill").textContent =
+      ai === "ALL" ? "Semua AI" : ai;
+  }
+
+  function buildUniversalPrompt(tool, input, extra, ai) {
+    const cfg = TOOL_CONFIG[tool];
+    const refs = state.referenceFiles.length
+      ? state.referenceFiles.map((f,i)=>`REFERENCE IMAGE ${i+1}: ${f.name}`).join("\n")
+      : "Tidak ada foto referensi.";
+
+    if (tool === "edit_foto" && ai === "ChatGPT") {
+      return [
+        "EDIT FOTO — CHATGPT IMAGES", "",
+        "Use the uploaded reference image as the primary image to edit.",
+        "Preserve identity, facial features, body proportions, product shape and important details unless explicitly instructed otherwise.", "",
+        "EDIT REQUEST:", input, "",
+        "ADDITIONAL EDITING INSTRUCTIONS:", extra || "Tidak ada.", "",
+        refs, "",
+        "QUALITY REQUIREMENTS:",
+        "- Make the edit photorealistic and seamless.",
+        "- Preserve natural anatomy, hands, skin texture and lighting.",
+        "- Preserve product design, logo and proportions unless explicitly asked to change them.",
+        "- Match perspective, shadows, reflections and color temperature.",
+        "- Do not add unrelated objects.",
+        "- Keep the requested composition and aspect ratio.", "",
+        "OUTPUT:", "Create the edited image directly from the uploaded reference image."
+      ].join("\n");
+    }
+
+    return [
+      "UNIVERSAL PROMPT", "", "TOOL: " + cfg.label, "TARGET AI: " + ai, "",
+      "SUBJECT / MAIN IDEA:", input, "",
+      "ADDITIONAL REQUIREMENTS:", extra || "Tidak ada detail tambahan.", "",
+      refs, "",
+      "CORE INSTRUCTIONS:",
+      "- Preserve the user's intended subject and purpose.",
+      "- Make the result clear, specific and production-ready.",
+      "- Maintain realistic proportions and coherent visual details.",
+      "- Respect reference-image details when provided.",
+      "- Do not invent important product or character details.",
+      "- Use natural language suitable for the selected AI.", "",
+      "OUTPUT:", "Return one clean, ready-to-copy prompt."
+    ].join("\n");
+  }
+
+  function handleReferenceUpload() {
+    const files = Array.from($("referenceInput").files || []);
+    const max = state.selectedTool === "edit_foto" ? 1 : 2;
+    if (files.length > max) {
+      alert(`Menu ${TOOL_CONFIG[state.selectedTool].label} maksimal ${max} foto.`);
+      $("referenceInput").value = "";
+      state.referenceFiles = [];
+      $("previewWrap").innerHTML = "";
+      $("previewWrap").classList.add("hidden");
+      return;
+    }
+    state.referenceFiles = files;
+    $("previewWrap").innerHTML = "";
+    if (!files.length) { $("previewWrap").classList.add("hidden"); return; }
+    $("previewWrap").classList.remove("hidden");
+    files.forEach(file => {
+      const img=document.createElement("img"); img.alt=file.name; img.src=URL.createObjectURL(file); $("previewWrap").appendChild(img);
+    });
+  }
+
+  function generatePrompt() {
+    const input = $("promptInput").value.trim();
+    const extra = $("extraInput").value.trim();
+
+    if (!input) {
+      alert("Silakan isi deskripsi / kebutuhan terlebih dahulu.");
+      $("promptInput").focus();
+      return;
+    }
+
+    if (state.selectedTool === "edit_foto" && !state.referenceFiles.length) {
+      alert("Untuk Edit Foto, upload minimal 1 foto referensi.");
+      $("referenceInput").click();
+      return;
+    }
+
+    if (state.selectedAI === "ALL") {
+      const targets = ["ChatGPT", "Gemini", "Veo 3", "Google Flow"];
+      const outputs = targets.map(ai =>
+        buildUniversalPrompt(state.selectedTool, input, extra, ai)
+      );
+
+      state.result = outputs.map((p, i) =>
+        "━━━━━━━━━━━━━━━━━━━━\\n" +
+        "TARGET " + targets[i] + "\\n" +
+        "━━━━━━━━━━━━━━━━━━━━\\n" +
+        p
+      ).join("\\n\\n");
+
+    } else {
+      state.result = buildUniversalPrompt(
+        state.selectedTool,
+        input,
+        extra,
+        state.selectedAI
+      );
+    }
+
+    $("result").textContent = state.result;
+    $("result").classList.remove("hidden");
+  }
+
+  async function copyPrompt() {
+    if (!state.result) {
+      alert("Generate prompt terlebih dahulu.");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(state.result);
+      alert("Prompt berhasil disalin.");
+    } catch (err) {
+      alert("Clipboard tidak tersedia. Tekan lama pada prompt lalu pilih Salin.");
+    }
+  }
+
+  function clearAll() {
+    $("promptInput").value = "";
+    $("extraInput").value = "";
+    $("result").textContent = "";
+    $("result").classList.add("hidden");
+    $("referenceInput").value = "";
+    $("previewWrap").innerHTML = "";
+    $("previewWrap").classList.add("hidden");
+    state.result = "";
+    state.referenceFiles = [];
+  }
+
+  // Event delegation — lebih rapi daripada banyak onclick inline.
+  $("toolMenu").addEventListener("click", e => {
+    const btn = e.target.closest("button[data-tool]");
+    if (btn) selectTool(btn.dataset.tool);
+  });
+
+  $("aiMenu").addEventListener("click", e => {
+    const btn = e.target.closest("button[data-ai]");
+    if (btn) selectAI(btn.dataset.ai);
+  });
+
+  $("generateBtn").addEventListener("click", generatePrompt);
+  $("referenceInput").addEventListener("change", handleReferenceUpload);
+  $("copyBtn").addEventListener("click", copyPrompt);
+  $("clearBtn").addEventListener("click", clearAll);
+
+  // Initial state
+  selectTool(state.selectedTool);
+  selectAI(state.selectedAI);
+  initTelegram();
+</script>
+</body>
+</html>
