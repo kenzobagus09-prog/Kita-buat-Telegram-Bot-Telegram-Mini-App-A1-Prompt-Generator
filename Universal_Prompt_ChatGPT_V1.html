@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Universal Prompt AI - ChatGPT V1</title>
+<style>
+body{font-family:Arial,sans-serif;background:#111;color:#fff;margin:0;padding:18px} .box{max-width:700px;margin:auto;background:#1b1b1b;padding:20px;border-radius:18px;box-shadow:0 4px 20px #0008}h1{font-size:25px;text-align:center;margin:5px 0 8px}p{color:#bbb;text-align:center}textarea{width:100%;box-sizing:border-box;min-height:150px;background:#292929;color:#fff;border:1px solid #444;border-radius:12px;padding:14px;font-size:16px;resize:vertical}.btn{width:100%;padding:14px;margin-top:10px;border:0;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer}.primary{background:#fff;color:#111}.secondary{background:#303030;color:#fff}.wa{background:#20c65a;color:#fff}.result{white-space:pre-wrap;background:#0d0d0d;border:1px solid #444;border-radius:12px;padding:14px;margin-top:15px;min-height:180px;line-height:1.5}.small{font-size:12px;color:#888;margin-top:12px}
+</style></head>
+<body><div class="box">
+<h1>🤖 UNIVERSAL PROMPT AI</h1><p>V1 — Optimizer khusus ChatGPT</p>
+<textarea id="input" placeholder="Tulis perintah sederhana Anda...\nContoh: Buat prompt video promosi obat kambing, durasi 24 detik, rasio 9:16, bahasa Indonesia."></textarea>
+<button class="btn primary" onclick="generate()">⚡ BUAT PROMPT CHATGPT</button>
+<div id="result" class="result">Hasil prompt akan muncul di sini...</div>
+<button class="btn secondary" onclick="openChatGPT()">🚀 BUKA DI CHATGPT</button>
+<div class="small">Tekan tombol di atas untuk membuka ChatGPT dengan prompt yang sudah dibuat.</div>
+</div>
+<script>
+function generate(){
+ const x=document.getElementById('input').value.trim();
+ if(!x){alert('Tulis perintah terlebih dahulu.');return;}
+ const duration=(x.match(/\b\d+\s*(?:detik|second|seconds)\b/i)||[])[0]||'sesuai permintaan';
+ const ratio=(x.match(/\b\d+\s*[:x]\s*\d+\b/i)||[])[0]||'sesuai permintaan';
+ const lower=x.toLowerCase();
+ const type=/video|vidio|film|promosi video|iklan/.test(lower)?'VIDEO':/gambar|foto|image|poster|desain/.test(lower)?'VISUAL':'UMUM';
+ const hasDialog=/dialog|percakapan|ucapan|bicara|narasi|voice over/.test(lower);
+ const prompt=`Anda adalah Prompt Engineer profesional untuk ChatGPT. Ubah perintah sederhana pengguna menjadi instruksi kerja yang sangat jelas, lengkap, terstruktur, dan siap digunakan.
+
+PERINTAH ASLI PENGGUNA:
+${x}
+
+TUGAS UTAMA:
+${type==='VIDEO'?'Susun prompt produksi video yang detail, konsisten, dan siap digunakan.':'Susun prompt yang jelas dan siap digunakan untuk menghasilkan jawaban/visual terbaik sesuai kebutuhan pengguna.'}
+
+ANALISIS OTOMATIS:
+- Tujuan: tentukan dari perintah pengguna tanpa mengubah maksud.
+- Subjek/model: pertahankan ciri yang disebutkan.
+- Produk/objek: pertahankan nama, bentuk, ukuran relatif, warna, label, dan fungsi jika disebutkan.
+- Aksi: jelaskan tindakan utama secara berurutan.
+- Lingkungan: tentukan lokasi, latar, suasana, dan waktu yang paling sesuai bila belum dijelaskan.
+- Gaya visual: realistis, natural, profesional, kecuali pengguna meminta gaya lain.
+- Kamera: pilih shot, sudut, komposisi, fokus, dan gerakan yang mendukung adegan.
+- Pencahayaan: natural dan konsisten dengan lokasi.
+- Dialog/audio: ${hasDialog?'pertahankan dialog/voice-over yang diminta dan gunakan bahasa Indonesia.':'jangan menambahkan dialog/audio yang tidak diminta.'}
+- Durasi: ${duration}
+- Rasio: ${ratio}
+- Referensi: jika ada gambar referensi, jadikan acuan dan jangan mengubah elemen penting tanpa instruksi.
+
+ATURAN WAJIB:
+1. Jangan mengubah tujuan utama pengguna.
+2. Jangan menghilangkan detail penting.
+3. Jangan menambahkan produk, orang, teks, logo, atribut, atau kejadian yang tidak diminta.
+4. Jika informasi belum lengkap, lengkapi dengan asumsi yang wajar dan konsisten, bukan dengan mengubah konsep.
+5. Untuk video, pecah menjadi adegan yang jelas dan jaga kontinuitas karakter, pakaian, produk, lokasi, pencahayaan, dan kamera.
+6. Gunakan bahasa Indonesia kecuali pengguna meminta bahasa lain.
+7. Buat hasil konkret, bukan penjelasan teori.
+8. Jika ada konflik antar-instruksi, prioritaskan instruksi pengguna yang paling spesifik.
+
+FORMAT HASIL:
+1. Tujuan
+2. Subjek/karakter
+3. Produk/objek
+4. Aksi
+5. Lingkungan & latar
+6. Visual & gaya
+7. Kamera & komposisi
+8. Pencahayaan & mood
+9. Dialog/audio (jika ada)
+10. Durasi & rasio
+11. Kontinuitas
+12. Batasan/negative constraints
+13. PROMPT FINAL siap digunakan
+
+KERJAKAN LANGSUNG. Jangan memberikan pembukaan panjang.`;
+ document.getElementById('result').textContent=prompt;
+}
+function openChatGPT(){
+ const t=document.getElementById('result').textContent;
+ if(!t||t.includes('Hasil prompt akan muncul')){alert('Buat prompt terlebih dahulu.');return;}
+ const url='https://chatgpt.com/?q='+encodeURIComponent(t);
+ window.location.href=url;
+}
+</script></body></html>
