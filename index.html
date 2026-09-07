@@ -2,16 +2,21 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Universal Prompt AI - ChatGPT V2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Universal Prompt AI</title>
 
 <style>
+*{
+  box-sizing:border-box;
+}
+
 body{
+  margin:0;
+  padding:18px;
   font-family:Arial,sans-serif;
   background:#111;
   color:#fff;
-  margin:0;
-  padding:18px
 }
 
 .box{
@@ -20,83 +25,84 @@ body{
   background:#1b1b1b;
   padding:20px;
   border-radius:18px;
-  box-shadow:0 4px 20px #0008
+  box-shadow:0 4px 20px #0008;
 }
 
 h1{
-  font-size:25px;
   text-align:center;
-  margin:5px 0 8px
+  font-size:25px;
+  margin:5px 0 8px;
 }
 
-p{
-  color:#bbb;
-  text-align:center
+.subtitle{
+  text-align:center;
+  color:#aaa;
+  margin-bottom:20px;
+}
+
+label{
+  display:block;
+  margin-bottom:8px;
+  font-weight:bold;
 }
 
 textarea{
   width:100%;
-  box-sizing:border-box;
   min-height:150px;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #444;
   background:#292929;
   color:#fff;
-  border:1px solid #444;
-  border-radius:12px;
-  padding:14px;
   font-size:16px;
-  resize:vertical
+  resize:vertical;
 }
 
-.btn{
+button{
   width:100%;
-  padding:14px;
-  margin-top:10px;
   border:0;
   border-radius:12px;
+  padding:15px;
+  margin-top:12px;
   font-size:16px;
   font-weight:bold;
-  cursor:pointer
+  cursor:pointer;
 }
 
-.primary{
+.btn-create{
   background:#fff;
-  color:#111
+  color:#111;
 }
 
-.secondary{
-  background:#303030;
-  color:#fff
-}
-
-.copy{
-  background:#444;
-  color:#fff
+.btn-chatgpt{
+  background:#19a463;
+  color:#fff;
 }
 
 .result{
-  white-space:pre-wrap;
+  margin-top:18px;
+  padding:15px;
+  min-height:180px;
   background:#0d0d0d;
   border:1px solid #444;
   border-radius:12px;
-  padding:14px;
-  margin-top:15px;
-  min-height:180px;
-  line-height:1.5
+  white-space:pre-wrap;
+  line-height:1.5;
 }
 
 .status{
   text-align:center;
   color:#20c65a;
-  font-size:14px;
-  margin-top:8px;
-  min-height:20px
+  margin-top:12px;
+  min-height:22px;
 }
 
-.small{
-  font-size:12px;
+.info{
+  text-align:center;
   color:#888;
-  margin-top:12px;
-  text-align:center
+  font-size:13px;
+  margin-top:15px;
+  line-height:1.5;
 }
 </style>
 </head>
@@ -107,39 +113,58 @@ textarea{
 
 <h1>🤖 UNIVERSAL PROMPT AI</h1>
 
-<p>V2 — Optimizer khusus ChatGPT</p>
-
-<textarea id="input"
-placeholder="Tulis perintah sederhana Anda...
-Contoh: Buat prompt video promosi obat kambing, durasi 24 detik, rasio 9:16, bahasa Indonesia."></textarea>
-
-<button class="btn primary" onclick="generate()">
-⚡ BUAT PROMPT CHATGPT
-</button>
-
-<div id="result" class="result">
-Hasil prompt akan muncul di sini...
+<div class="subtitle">
+Pembuat Prompt Profesional untuk ChatGPT
 </div>
 
-<button class="btn copy" onclick="copyPrompt()">
-📋 SALIN PROMPT
+<label for="input">
+Tulis perintah Anda:
+</label>
+
+<textarea
+id="input"
+placeholder="Contoh:
+Buat prompt video promosi obat kambing, durasi 24 detik, rasio 9:16, bahasa Indonesia."
+></textarea>
+
+<button
+class="btn-create"
+onclick="generate()">
+⚡ BUAT PROMPT
 </button>
 
-<button class="btn secondary" onclick="openChatGPT()">
-🚀 BUKA DI CHATGPT
+<div
+id="result"
+class="result">
+Prompt hasil akan muncul di sini...
+</div>
+
+<button
+class="btn-chatgpt"
+onclick="sendToChatGPT()">
+🚀 KIRIM KE CHATGPT
 </button>
 
-<div id="status" class="status"></div>
+<div
+id="status"
+class="status">
+</div>
 
-<div class="small">
-Buat prompt → Salin → Buka ChatGPT → Tempel prompt.
+<div class="info">
+Setelah tombol diklik, prompt akan otomatis disalin.
+<br>
+ChatGPT akan dibuka.
+<br>
+Di ChatGPT tekan kotak pesan → Tempel → Kirim.
 </div>
 
 </div>
+
 
 <script>
 
 let generatedPrompt = "";
+
 
 /* =========================
    MEMBUAT PROMPT
@@ -147,163 +172,274 @@ let generatedPrompt = "";
 
 function generate(){
 
-  const x=document.getElementById('input').value.trim();
+  const input =
+    document.getElementById("input").value.trim();
 
-  if(!x){
-    alert('Tulis perintah terlebih dahulu.');
+  if(!input){
+
+    alert("Tulis perintah terlebih dahulu.");
+
     return;
   }
 
-  const duration=
-    (x.match(/\b\d+\s*(?:detik|second|seconds)\b/i)||[])[0]
-    ||'sesuai permintaan';
 
-  const ratio=
-    (x.match(/\b\d+\s*[:x]\s*\d+\b/i)||[])[0]
-    ||'sesuai permintaan';
+  const lower =
+    input.toLowerCase();
 
-  const lower=x.toLowerCase();
 
-  const type=
+  /* DURASI */
+
+  const durationMatch =
+    input.match(
+      /\b\d+\s*(?:detik|second|seconds)\b/i
+    );
+
+  const duration =
+    durationMatch
+    ? durationMatch[0]
+    : "sesuai permintaan";
+
+
+  /* RASIO */
+
+  const ratioMatch =
+    input.match(
+      /\b\d+\s*[:x]\s*\d+\b/i
+    );
+
+  const ratio =
+    ratioMatch
+    ? ratioMatch[0]
+    : "sesuai permintaan";
+
+
+  /* JENIS PROMPT */
+
+  let type = "UMUM";
+
+  if(
     /video|vidio|film|promosi video|iklan/.test(lower)
-    ?'VIDEO'
-    :/gambar|foto|image|poster|desain/.test(lower)
-    ?'VISUAL'
-    :'UMUM';
+  ){
 
-  const hasDialog=
+    type = "VIDEO";
+
+  }
+  else if(
+    /gambar|foto|image|poster|desain/.test(lower)
+  ){
+
+    type = "VISUAL";
+
+  }
+
+
+  /* DIALOG */
+
+  const hasDialog =
     /dialog|percakapan|ucapan|bicara|narasi|voice over/.test(lower);
 
-  generatedPrompt=`Anda adalah Prompt Engineer profesional untuk ChatGPT. Ubah perintah sederhana pengguna menjadi instruksi kerja yang sangat jelas, lengkap, terstruktur, dan siap digunakan.
+
+  /* PROMPT FINAL */
+
+  generatedPrompt =
+
+`Anda adalah Prompt Engineer profesional untuk ChatGPT.
+
+TUGAS:
+Ubah perintah pengguna di bawah ini menjadi prompt yang lengkap, jelas, terstruktur, dan siap digunakan.
 
 PERINTAH ASLI PENGGUNA:
-${x}
+${input}
 
-TUGAS UTAMA:
-${type==='VIDEO'
-?'Susun prompt produksi video yang detail, konsisten, dan siap digunakan.'
-:'Susun prompt yang jelas dan siap digunakan untuk menghasilkan jawaban/visual terbaik sesuai kebutuhan pengguna.'}
+JENIS PEKERJAAN:
+${type}
 
-ANALISIS OTOMATIS:
+ANALISIS DAN PENGEMBANGAN:
 
-- Tujuan: tentukan dari perintah pengguna tanpa mengubah maksud.
-- Subjek/model: pertahankan ciri yang disebutkan.
-- Produk/objek: pertahankan nama, bentuk, ukuran relatif, warna, label, dan fungsi jika disebutkan.
-- Aksi: jelaskan tindakan utama secara berurutan.
-- Lingkungan: tentukan lokasi, latar, suasana, dan waktu yang paling sesuai bila belum dijelaskan.
-- Gaya visual: realistis, natural, profesional, kecuali pengguna meminta gaya lain.
-- Kamera: pilih shot, sudut, komposisi, fokus, dan gerakan yang mendukung adegan.
-- Pencahayaan: natural dan konsisten dengan lokasi.
-- Dialog/audio: ${hasDialog
-?'pertahankan dialog/voice-over yang diminta dan gunakan bahasa Indonesia.'
-:'jangan menambahkan dialog/audio yang tidak diminta.'}
-- Durasi: ${duration}
-- Rasio: ${ratio}
-- Referensi: jika ada gambar referensi, jadikan acuan dan jangan mengubah elemen penting tanpa instruksi.
+1. TUJUAN
+Tentukan tujuan utama pengguna dan jangan mengubah maksudnya.
+
+2. SUBJEK / KARAKTER
+Pertahankan semua karakter, model, penampilan, pakaian, dan ciri penting yang disebutkan.
+
+3. PRODUK / OBJEK
+Pertahankan nama produk, bentuk, ukuran relatif, warna, tulisan, label, fungsi, dan detail penting lainnya.
+
+4. AKSI
+Jelaskan tindakan secara jelas dan berurutan.
+
+5. LOKASI DAN LATAR
+Tentukan lingkungan, tempat, suasana, dan waktu yang paling sesuai apabila belum dijelaskan.
+
+6. GAYA VISUAL
+Gunakan tampilan realistis, natural, profesional, dan berkualitas tinggi kecuali pengguna meminta gaya lain.
+
+7. KAMERA
+Tentukan shot, sudut kamera, komposisi, fokus, dan gerakan kamera yang sesuai.
+
+8. PENCAHAYAAN
+Gunakan pencahayaan yang natural dan konsisten dengan suasana adegan.
+
+9. DIALOG / AUDIO
+${
+hasDialog
+? "Pertahankan dialog atau voice-over yang diminta dan gunakan bahasa Indonesia."
+: "Jangan menambahkan dialog atau audio yang tidak diminta."
+}
+
+10. DURASI
+${duration}
+
+11. RASIO GAMBAR
+${ratio}
+
+12. REFERENSI
+Jika pengguna menyediakan gambar referensi, gunakan gambar tersebut sebagai acuan dan jangan mengubah elemen penting tanpa perintah.
 
 ATURAN WAJIB:
 
-1. Jangan mengubah tujuan utama pengguna.
-2. Jangan menghilangkan detail penting.
-3. Jangan menambahkan produk, orang, teks, logo, atribut, atau kejadian yang tidak diminta.
-4. Jika informasi belum lengkap, lengkapi dengan asumsi yang wajar dan konsisten, bukan dengan mengubah konsep.
-5. Untuk video, pecah menjadi adegan yang jelas dan jaga kontinuitas karakter, pakaian, produk, lokasi, pencahayaan, dan kamera.
-6. Gunakan bahasa Indonesia kecuali pengguna meminta bahasa lain.
-7. Buat hasil konkret, bukan penjelasan teori.
-8. Jika ada konflik antar-instruksi, prioritaskan instruksi pengguna yang paling spesifik.
+- Jangan mengubah tujuan pengguna.
+- Jangan menghilangkan detail penting.
+- Jangan menambahkan orang, produk, logo, teks, atau kejadian yang tidak diminta.
+- Jika ada informasi yang belum lengkap, lengkapi dengan asumsi yang wajar.
+- Untuk video, buat adegan yang jelas dan terstruktur.
+- Jaga kontinuitas karakter, pakaian, produk, lokasi, pencahayaan, dan kamera.
+- Gunakan bahasa Indonesia kecuali pengguna meminta bahasa lain.
+- Jangan memberikan teori yang tidak diperlukan.
+- Hasil harus langsung siap digunakan di ChatGPT.
+- Jika ada instruksi yang saling bertentangan, prioritaskan instruksi pengguna yang paling spesifik.
 
 FORMAT HASIL:
 
 1. Tujuan
-2. Subjek/karakter
-3. Produk/objek
+2. Subjek / karakter
+3. Produk / objek
 4. Aksi
-5. Lingkungan & latar
-6. Visual & gaya
-7. Kamera & komposisi
-8. Pencahayaan & mood
-9. Dialog/audio (jika ada)
-10. Durasi & rasio
+5. Lokasi dan latar
+6. Visual dan gaya
+7. Kamera dan komposisi
+8. Pencahayaan dan mood
+9. Dialog / audio
+10. Durasi dan rasio
 11. Kontinuitas
-12. Batasan/negative constraints
-13. PROMPT FINAL siap digunakan
+12. Negative constraints
+13. PROMPT FINAL
 
-KERJAKAN LANGSUNG. Jangan memberikan pembukaan panjang.`;
+KERJAKAN LANGSUNG.
+Jangan memberikan pembukaan panjang.`;
 
-  document.getElementById('result').textContent=generatedPrompt;
 
-  document.getElementById('status').textContent=
-    '✅ Prompt berhasil dibuat.';
+  document.getElementById("result").textContent =
+    generatedPrompt;
+
+
+  document.getElementById("status").textContent =
+    "✅ Prompt berhasil dibuat.";
+
 }
 
 
 /* =========================
-   SALIN PROMPT
+   SALIN OTOMATIS
 ========================= */
 
 async function copyPrompt(){
 
   if(!generatedPrompt){
-    alert('Buat prompt terlebih dahulu.');
-    return;
+
+    return false;
+
   }
+
 
   try{
 
-    await navigator.clipboard.writeText(generatedPrompt);
+    await navigator.clipboard.writeText(
+      generatedPrompt
+    );
 
-    document.getElementById('status').textContent=
-      '✅ Prompt sudah disalin.';
+    return true;
 
-  }catch(error){
-
-    const area=document.createElement('textarea');
-
-    area.value=generatedPrompt;
-
-    document.body.appendChild(area);
-
-    area.select();
-
-    document.execCommand('copy');
-
-    document.body.removeChild(area);
-
-    document.getElementById('status').textContent=
-      '✅ Prompt sudah disalin.';
   }
+  catch(error){
+
+    try{
+
+      const area =
+        document.createElement("textarea");
+
+      area.value =
+        generatedPrompt;
+
+      document.body.appendChild(area);
+
+      area.select();
+
+      document.execCommand("copy");
+
+      document.body.removeChild(area);
+
+      return true;
+
+    }
+    catch(e){
+
+      return false;
+
+    }
+
+  }
+
 }
 
 
 /* =========================
-   BUKA CHATGPT
+   KIRIM KE CHATGPT
 ========================= */
 
-function openChatGPT(){
+async function sendToChatGPT(){
 
   if(!generatedPrompt){
 
-    alert('Buat prompt terlebih dahulu.');
+    alert(
+      "Buat prompt terlebih dahulu."
+    );
 
     return;
+
   }
 
-  /*
-   * Kita TIDAK menggunakan ?q=
-   * karena tidak menjamin prompt masuk
-   * ke kotak ChatGPT.
-   */
 
-  copyPrompt();
+  /* Salin prompt */
+
+  const copied =
+    await copyPrompt();
+
+
+  if(copied){
+
+    document.getElementById("status").textContent =
+      "✅ Prompt sudah disalin. Membuka ChatGPT...";
+
+  }
+  else{
+
+    document.getElementById("status").textContent =
+      "⚠️ Prompt belum berhasil disalin.";
+
+  }
+
+
+  /* Buka ChatGPT */
 
   setTimeout(function(){
 
     window.open(
-      'https://chatgpt.com/',
-      '_blank'
+      "https://chatgpt.com/",
+      "_blank"
     );
 
-  },300);
+  },500);
 
 }
 
