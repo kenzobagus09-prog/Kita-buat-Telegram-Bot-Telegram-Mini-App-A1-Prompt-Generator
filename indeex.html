@@ -66,9 +66,10 @@
 <script>
 // ===== SUPABASE CONFIG =====
 // Ganti HANYA dua nilai di bawah ini dengan Project URL dan Publishable Key milik Pak Toni.
-const SUPABASE_URL = 'MASUKKAN_PROJECT_URL_DI_SINI';
-const SUPABASE_PUBLISHABLE_KEY = 'MASUKKAN_PUBLISHABLE_KEY_DI_SINI';
+const SUPABASE_URL = 'https://wxadlrbnebzacyezvufh.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_2DPmwL_J4hm2Mqgrqjbx6A_fsEWG4pp';
 
+if (!window.supabase) { throw new Error('Supabase library gagal dimuat.'); }
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const $auth = id => document.getElementById(id);
 
