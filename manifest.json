@@ -2,8 +2,5 @@
   "name": "AI Prompt Generator Affiliate",
   "short_name": "Prompt Generator",
   "start_url": "./",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
-  "description": "AI Prompt Generator Affiliate"
+  "display": "standalone"
 }
