@@ -6,10 +6,25 @@
 <style>
 *{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;background:#f3f4f6;color:#111827}.app{max-width:760px;margin:auto;padding:14px}.card{background:#fff;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 2px 8px #0000000a}.hero{background:#111827;color:#fff}.option{padding:13px;border:1px solid #d1d5db;border-radius:11px;margin:8px 0;cursor:pointer}.option.active{border:2px solid #111827;background:#f9fafb}.desc{background:#f9fafb;border-radius:10px;padding:11px;margin-top:10px;line-height:1.5;font-size:13px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}input,textarea,select{width:100%;padding:11px;border:1px solid #ccc;border-radius:10px;margin:5px 0 10px;font:inherit}textarea{min-height:100px}.photo-slots{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.slot{border:2px dashed #cbd5e1;border-radius:12px;padding:10px;text-align:center;min-height:130px;display:flex;flex-direction:column;justify-content:center}.slot img{width:100%;height:100px;object-fit:cover;border-radius:8px}.slot input{margin:7px 0 0}.remove{margin-top:7px;padding:9px;border:0;border-radius:9px;background:#fee2e2;color:#991b1b;font-weight:bold;cursor:pointer}.primary{width:100%;padding:14px;border:0;border-radius:11px;background:#111827;color:#fff;font-weight:bold;font-size:15px}.primary:disabled{opacity:.4}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.actions button,.ai button{padding:11px;border:0;border-radius:10px;cursor:pointer}.ai{display:grid;grid-template-columns:1fr 1fr;gap:8px}.hidden{display:none}.ok{color:#047857}.bad{color:#b91c1c}.note{font-size:12px;color:#6b7280;line-height:1.5}.lock{background:#f9fafb;border-left:4px solid #111827;padding:10px;font-size:13px;line-height:1.55}hr{border:0;border-top:1px solid #eee;margin:16px 0}@media(max-width:500px){.grid,.photo-slots{grid-template-columns:1fr 1fr}.actions{grid-template-columns:1fr 1fr}}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<main class="app">
-<header class="card hero"><h1>AI Prompt Generator Affiliate</h1><p>Buat prompt profesional untuk Foto atau Video. Tanpa API.</p></header>
+<section id="auth" class="app">
+<section class="card hero"><h1>AI Prompt Generator Affiliate</h1><p>Silakan daftar atau masuk untuk menggunakan aplikasi.</p></section>
+<section class="card">
+<h2>👤 Akun Pelanggan</h2>
+<label>Email</label><input id="authEmail" type="email" autocomplete="email" placeholder="nama@email.com">
+<label>Password</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Minimal 6 karakter">
+<div class="actions">
+<button id="signup" type="button">📝 Daftar</button>
+<button id="login" type="button">🔐 Masuk</button>
+</div>
+<p id="authMsg" class="note"></p>
+</section>
+</section>
+
+<main id="appMain" class="app hidden">
+<header class="card hero"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span id="userEmail" style="font-size:12px;opacity:.85"></span><button id="logout" type="button" style="padding:8px 10px;border:0;border-radius:9px;cursor:pointer">Keluar</button></div><h1>AI Prompt Generator Affiliate</h1><p>Buat prompt profesional untuk Foto atau Video. Tanpa API.</p></header>
 
 <section class="card">
 <h2>🎯 Tujuan Anda Membuat Konten</h2><div id="goals"></div><div id="goalDesc" class="desc"></div>
@@ -49,6 +64,54 @@
 <footer class="note" style="text-align:center">HTML Prompt Engine lokal • Simpan menggunakan browser perangkat</footer>
 </main>
 <script>
+// ===== SUPABASE CONFIG =====
+// Ganti HANYA dua nilai di bawah ini dengan Project URL dan Publishable Key milik Pak Toni.
+const SUPABASE_URL = 'MASUKKAN_PROJECT_URL_DI_SINI';
+const SUPABASE_PUBLISHABLE_KEY = 'MASUKKAN_PUBLISHABLE_KEY_DI_SINI';
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const $auth = id => document.getElementById(id);
+
+function showAuthMessage(text, good=false){
+  const el=$auth('authMsg');
+  el.textContent=text;
+  el.className=good?'note ok':'note bad';
+}
+
+async function doSignup(){
+  const email=$auth('authEmail').value.trim();
+  const password=$auth('authPassword').value;
+  if(!email || !password){showAuthMessage('Isi email dan password terlebih dahulu.');return;}
+  if(password.length<6){showAuthMessage('Password minimal 6 karakter.');return;}
+  const {error}=await supabaseClient.auth.signUp({email,password});
+  if(error){showAuthMessage(error.message);return;}
+  showAuthMessage('Pendaftaran berhasil. Jika diminta, buka email untuk konfirmasi akun.',true);
+}
+
+async function doLogin(){
+  const email=$auth('authEmail').value.trim();
+  const password=$auth('authPassword').value;
+  if(!email || !password){showAuthMessage('Isi email dan password terlebih dahulu.');return;}
+  const {error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error){showAuthMessage(error.message);return;}
+}
+
+async function doLogout(){await supabaseClient.auth.signOut();}
+$auth('signup').onclick=doSignup;
+$auth('login').onclick=doLogin;
+$auth('logout').onclick=doLogout;
+
+async function updateAuthUI(){
+  const {data:{session}}=await supabaseClient.auth.getSession();
+  const loggedIn=!!session;
+  $auth('auth').classList.toggle('hidden',loggedIn);
+  $auth('appMain').classList.toggle('hidden',!loggedIn);
+  $auth('userEmail').textContent=loggedIn?(session.user.email||'Akun pelanggan'):'';
+}
+
+supabaseClient.auth.onAuthStateChange(()=>updateAuthUI());
+updateAuthUI();
+
 let goal='TikTok Affiliate',photos=[null,null,null],modelPhotos=[null,null,null];
 const $=id=>document.getElementById(id),v=id=>$(id).value.trim();
 const goals=[['🛒 TikTok Affiliate','TikTok Affiliate'],['📢 Promosi Produk','Promosi Produk'],['🏪 Konten Bisnis/Toko','Konten Bisnis/Toko'],['📱 Sosial Media','Sosial Media']];
