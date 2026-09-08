@@ -1,6 +1,7 @@
 {
-"name": "Kita Prompt Generator",
-"short_name": "Prompt Generator",
-"start_url": ".",
-"display": "standalone"
+  "name": "Kita Prompt Generator",
+  "short_name": "Prompt Generator",
+  "start_url": ".",
+  "display": "standalone",
+  "description": "Aplikasi AI Prompt Generator untuk membuat prompt berkualitas dengan mudah."
 }
