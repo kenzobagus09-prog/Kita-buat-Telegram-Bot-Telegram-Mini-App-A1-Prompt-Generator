@@ -1,1 +1,841 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>AI Perhitungan A1</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f7fb;
+    color: #172033;
+}
+
+.container {
+    max-width: 700px;
+    margin: auto;
+    padding: 18px;
+}
+
+.card {
+    background: white;
+    border: 1px solid #e1e6ef;
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 15px;
+}
+
+h1 {
+    margin-top: 0;
+    font-size: 23px;
+}
+
+.info {
+    color: #687386;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: 12px;
+    border: 1px solid #cfd6e2;
+    border-radius: 12px;
+    font-size: 16px;
+    resize: vertical;
+}
+
+button {
+    border: none;
+    border-radius: 12px;
+    padding: 12px 15px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #172033;
+    color: white;
+}
+
+button.secondary {
+    background: #eef3ff;
+    color: #172033;
+}
+
+.button-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.button-row button {
+    flex: 1;
+    min-width: 130px;
+}
+
+.warning {
+    background: #fff4e5;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.success {
+    background: #e9f8ef;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.result {
+    display: none;
+}
+
+.number-result {
+    font-size: 28px;
+    font-weight: bold;
+    letter-spacing: 5px;
+    margin-top: 10px;
+}
+
+.small {
+    color: #687386;
+    font-size: 13px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+
+th,
+td {
+    padding: 8px;
+    border-bottom: 1px solid #e1e6ef;
+    text-align: left;
+    font-size: 13px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <h1>AI Perhitungan A1</h1>
+
+        <div class="info">
+            Analisis menggunakan beberapa faktor:
+            frekuensi, tren, besar-kecil, ganjil-genap,
+            dan skor gabungan.
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <b>INPUT 30 DATA</b>
+
+        <div class="info" style="margin:8px 0;">
+            Masukkan tepat 30 angka.
+            Pisahkan dengan koma atau spasi.
+        </div>
+
+        <textarea
+            id="inputData"
+            placeholder="Contoh:
+55,47,94,94,79,14,07,02,91,73,92,32,46,90,06,99,72,...">
+        </textarea>
+
+        <div class="button-row">
+
+            <button onclick="hitungAnalisis()">
+                HITUNG ANALISIS
+            </button>
+
+            <button
+                class="secondary"
+                onclick="bersihkan()">
+                BERSIHKAN
+            </button>
+
+        </div>
+
+        <div id="status"></div>
+
+    </div>
+
+
+    <div id="hasilArea" class="result">
+
+        <div class="card">
+
+            <b>HASIL ANALISIS</b>
+
+            <div class="button-row">
+
+                <button
+                    class="secondary"
+                    onclick="tampilkan('satuan')">
+                    TOP 6 SATUAN
+                </button>
+
+                <button
+                    class="secondary"
+                    onclick="tampilkan('puluhan')">
+                    TOP 4 PULUHAN
+                </button>
+
+                <button
+                    class="secondary"
+                    onclick="tampilkan('cadangan')">
+                    3 CADANGAN
+                </button>
+
+            </div>
+
+            <div id="hasilUtama"></div>
+
+        </div>
+
+
+        <div class="card">
+
+            <b>RINGKASAN ANALISIS</b>
+
+            <div id="ringkasan"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   DATA GLOBAL
+========================================================= */
+
+let DATA = [];
+
+let HASIL = {};
+
+
+/* =========================================================
+   MEMBACA INPUT
+========================================================= */
+
+function ambilData() {
+
+    const teks =
+        document
+        .getElementById("inputData")
+        .value
+        .trim();
+
+    if (!teks) {
+        return [];
+    }
+
+    return teks
+        .split(/[\s,;]+/)
+        .filter(Boolean)
+        .map(Number);
+}
+
+
+/* =========================================================
+   HITUNG ANALISIS
+========================================================= */
+
+function hitungAnalisis() {
+
+    const status =
+        document.getElementById("status");
+
+    const data = ambilData();
+
+
+    /* -----------------------------------------------
+       CEK ANGKA
+    ------------------------------------------------ */
+
+    if (
+        data.some(
+            angka =>
+                !Number.isInteger(angka) ||
+                angka < 0 ||
+                angka > 99
+        )
+    ) {
+
+        status.innerHTML =
+            '<div class="warning">' +
+            'Data harus berupa angka 00 sampai 99.' +
+            '</div>';
+
+        return;
+    }
+
+
+    /* -----------------------------------------------
+       CEK JUMLAH DATA
+    ------------------------------------------------ */
+
+    if (data.length !== 30) {
+
+        status.innerHTML =
+            '<div class="warning">' +
+            'Data harus tepat 30 angka. ' +
+            'Saat ini terdapat ' +
+            data.length +
+            ' angka.' +
+            '</div>';
+
+        return;
+    }
+
+
+    DATA = data;
+
+
+    /* =================================================
+       FREKUENSI SATUAN DAN PULUHAN
+    ================================================= */
+
+    const frekuensiSatuan =
+        Array(10).fill(0);
+
+    const frekuensiPuluhan =
+        Array(10).fill(0);
+
+
+    /* =================================================
+       POSISI KEMUNCULAN TERAKHIR
+    ================================================= */
+
+    const terakhirSatuan =
+        Array(10).fill(999);
+
+    const terakhirPuluhan =
+        Array(10).fill(999);
+
+
+    /* =================================================
+       TREN
+    ================================================= */
+
+    const trenSatuan =
+        Array(10).fill(0);
+
+    const trenPuluhan =
+        Array(10).fill(0);
+
+
+    for (
+        let i = 0;
+        i < data.length;
+        i++
+    ) {
+
+        const angka = data[i];
+
+        const satuan =
+            angka % 10;
+
+        const puluhan =
+            Math.floor(angka / 10);
+
+
+        /* FREKUENSI */
+
+        frekuensiSatuan[satuan]++;
+
+        frekuensiPuluhan[puluhan]++;
+
+
+        /* KEMUNCULAN TERAKHIR */
+
+        terakhirSatuan[satuan] =
+            Math.min(
+                terakhirSatuan[satuan],
+                29 - i
+            );
+
+        terakhirPuluhan[puluhan] =
+            Math.min(
+                terakhirPuluhan[puluhan],
+                29 - i
+            );
+
+
+        /* =============================================
+           TREN
+
+           Data yang lebih baru diberi bobot lebih besar.
+        ============================================= */
+
+        const bobot =
+            (i + 1) / data.length;
+
+
+        trenSatuan[satuan] += bobot;
+
+        trenPuluhan[puluhan] += bobot;
+
+    }
+
+
+    /* =================================================
+       RATA-RATA
+    ================================================= */
+
+    const total =
+        data.reduce(
+            (jumlah, angka) =>
+                jumlah + angka,
+            0
+        );
+
+    const rataRata =
+        total / data.length;
+
+
+    /* =================================================
+       GANJIL / GENAP
+    ================================================= */
+
+    const jumlahGanjil =
+        data.filter(
+            angka => angka % 2 !== 0
+        ).length;
+
+    const jumlahGenap =
+        data.length - jumlahGanjil;
+
+
+    /* =================================================
+       BESAR / KECIL
+
+       00-49 = kecil
+       50-99 = besar
+    ================================================= */
+
+    const jumlahBesar =
+        data.filter(
+            angka => angka >= 50
+        ).length;
+
+    const jumlahKecil =
+        data.length - jumlahBesar;
+
+
+    /* =================================================
+       FUNGSI SKOR
+
+       HASIL TIDAK HANYA BERDASARKAN RATA-RATA.
+
+       Faktor:
+       1. Frekuensi
+       2. Tren
+       3. Kedekatan kemunculan
+    ================================================= */
+
+    function hitungSkor(
+        frekuensi,
+        tren,
+        terakhir
+    ) {
+
+        const skorFrekuensi =
+            (frekuensi / 30) * 55;
+
+
+        const skorTren =
+            tren * 25;
+
+
+        let skorKedekatan = 0;
+
+
+        if (terakhir !== 999) {
+
+            skorKedekatan =
+                Math.max(
+                    0,
+                    20 - terakhir
+                ) / 20 * 20;
+
+        }
+
+
+        return (
+            skorFrekuensi +
+            skorTren +
+            skorKedekatan
+        );
+
+    }
+
+
+    /* =================================================
+       SKOR SATUAN
+    ================================================= */
+
+    const skorSatuan =
+        frekuensiSatuan.map(
+            (frekuensi, angka) => {
+
+                return {
+
+                    angka: angka,
+
+                    frekuensi:
+                        frekuensi,
+
+                    tren:
+                        trenSatuan[angka],
+
+                    terakhir:
+                        terakhirSatuan[angka],
+
+                    skor:
+                        hitungSkor(
+                            frekuensi,
+                            trenSatuan[angka],
+                            terakhirSatuan[angka]
+                        )
+
+                };
+
+            }
+        );
+
+
+    /* =================================================
+       SKOR PULUHAN
+    ================================================= */
+
+    const skorPuluhan =
+        frekuensiPuluhan.map(
+            (frekuensi, angka) => {
+
+                return {
+
+                    angka: angka,
+
+                    frekuensi:
+                        frekuensi,
+
+                    tren:
+                        trenPuluhan[angka],
+
+                    terakhir:
+                        terakhirPuluhan[angka],
+
+                    skor:
+                        hitungSkor(
+                            frekuensi,
+                            trenPuluhan[angka],
+                            terakhirPuluhan[angka]
+                        )
+
+                };
+
+            }
+        );
+
+
+    /* =================================================
+       URUTKAN
+    ================================================= */
+
+    skorSatuan.sort(
+        (a, b) =>
+            b.skor - a.skor ||
+            b.frekuensi - a.frekuensi
+    );
+
+
+    skorPuluhan.sort(
+        (a, b) =>
+            b.skor - a.skor ||
+            b.frekuensi - a.frekuensi
+    );
+
+
+    /* =================================================
+       3 CADANGAN
+
+       Diambil dari kandidat setelah TOP utama.
+    ================================================= */
+
+    const kandidatCadangan = [
+
+        ...skorSatuan.slice(6),
+
+        ...skorPuluhan.slice(4)
+
+    ];
+
+
+    kandidatCadangan.sort(
+        (a, b) =>
+            b.skor - a.skor ||
+            b.frekuensi - a.frekuensi
+    );
+
+
+    const cadangan =
+        kandidatCadangan.slice(0, 3);
+
+
+    /* =================================================
+       SIMPAN HASIL
+    ================================================= */
+
+    HASIL = {
+
+        satuan:
+            skorSatuan,
+
+        puluhan:
+            skorPuluhan,
+
+        cadangan:
+            cadangan,
+
+        rataRata:
+            rataRata,
+
+        ganjil:
+            jumlahGanjil,
+
+        genap:
+            jumlahGenap,
+
+        besar:
+            jumlahBesar,
+
+        kecil:
+            jumlahKecil
+
+    };
+
+
+    /* =================================================
+       TAMPILKAN
+    ================================================= */
+
+    document
+        .getElementById("hasilArea")
+        .style.display = "block";
+
+
+    status.innerHTML =
+        '<div class="success">' +
+        '30 data diterima. Analisis selesai.' +
+        '</div>';
+
+
+    document
+        .getElementById("ringkasan")
+        .innerHTML =
+
+        "<table>" +
+
+        "<tr>" +
+        "<td>Rata-rata</td>" +
+        "<td><b>" +
+        rataRata.toFixed(2) +
+        "</b></td>" +
+        "</tr>" +
+
+        "<tr>" +
+        "<td>Ganjil / Genap</td>" +
+        "<td><b>" +
+        jumlahGanjil +
+        " / " +
+        jumlahGenap +
+        "</b></td>" +
+        "</tr>" +
+
+        "<tr>" +
+        "<td>Besar / Kecil</td>" +
+        "<td><b>" +
+        jumlahBesar +
+        " / " +
+        jumlahKecil +
+        "</b></td>" +
+        "</tr>" +
+
+        "</table>";
+
+
+    tampilkan("satuan");
+
+}
+
+
+/* =========================================================
+   TAMPILKAN HASIL
+========================================================= */
+
+function tampilkan(jenis) {
+
+    if (!HASIL.satuan) {
+        return;
+    }
+
+
+    let data;
+
+    let judul;
+
+
+    if (jenis === "satuan") {
+
+        data =
+            HASIL.satuan.slice(0, 6);
+
+        judul =
+            "TOP 6 SATUAN";
+
+    }
+
+
+    else if (jenis === "puluhan") {
+
+        data =
+            HASIL.puluhan.slice(0, 4);
+
+        judul =
+            "TOP 4 PULUHAN";
+
+    }
+
+
+    else {
+
+        data =
+            HASIL.cadangan;
+
+        judul =
+            "3 CADANGAN";
+
+    }
+
+
+    let angkaTampil =
+        data
+        .map(item => item.angka)
+        .join(" ");
+
+
+    let tabel =
+
+        "<table>" +
+
+        "<tr>" +
+        "<th>Angka</th>" +
+        "<th>Frekuensi</th>" +
+        "<th>Tren</th>" +
+        "<th>Skor</th>" +
+        "</tr>";
+
+
+    data.forEach(
+        item => {
+
+            tabel +=
+
+                "<tr>" +
+
+                "<td><b>" +
+                item.angka +
+                "</b></td>" +
+
+                "<td>" +
+                item.frekuensi +
+                "</td>" +
+
+                "<td>" +
+                item.tren.toFixed(2) +
+                "</td>" +
+
+                "<td>" +
+                item.skor.toFixed(2) +
+                "</td>" +
+
+                "</tr>";
+
+        }
+    );
+
+
+    tabel += "</table>";
+
+
+    document
+        .getElementById("hasilUtama")
+        .innerHTML =
+
+        '<div class="small">' +
+        judul +
+        '</div>' +
+
+        '<div class="number-result">' +
+        angkaTampil +
+        '</div>' +
+
+        tabel;
+
+}
+
+
+/* =========================================================
+   BERSIHKAN
+========================================================= */
+
+function bersihkan() {
+
+    document
+        .getElementById("inputData")
+        .value = "";
+
+
+    document
+        .getElementById("status")
+        .innerHTML = "";
+
+
+    document
+        .getElementById("hasilArea")
+        .style.display = "none";
+
+
+    DATA = [];
+
+    HASIL = {};
+
+}
+
+</script>
+
+</body>
+</html>
